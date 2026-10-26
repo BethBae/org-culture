@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>우리 조직문화 진단</title>
+<meta name="description" content="함께 성장하는 조직문화와 효과적인 슈퍼비전 — 익명 실시간 조직문화 진단">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --bg1:#e9eefc; --bg2:#fbeef3; --bg3:#e8f6f1;
+  --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.75);
+  --line:rgba(255,255,255,.7); --shadow:0 8px 32px rgba(60,70,120,.12);
+  --ink:#24283b; --sub:#5d6380; --muted:#8a90ab;
+  --c-now:#5b6cf0; --c-want:#ef6f97; --c-good:#2fa37c; --c-warn:#e0913a; --c-bad:#d9534f;
+  --accent:#5b6cf0; --radius:22px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg1:#161a2e; --bg2:#26172a; --bg3:#122722;
+    --glass:rgba(30,34,56,.55); --glass-strong:rgba(36,40,66,.8);
+    --line:rgba(255,255,255,.12); --shadow:0 8px 32px rgba(0,0,0,.35);
+    --ink:#eef0fb; --sub:#b4b9d6; --muted:#8a90ab;
+    --c-now:#8a97ff; --c-want:#ff8fb1; --accent:#8a97ff;
+  }
+}
+:root[data-theme="dark"]{
+  --bg1:#161a2e; --bg2:#26172a; --bg3:#122722;
+  --glass:rgba(30,34,56,.55); --glass-strong:rgba(36,40,66,.8);
+  --line:rgba(255,255,255,.12); --shadow:0 8px 32px rgba(0,0,0,.35);
+  --ink:#eef0fb; --sub:#b4b9d6; --muted:#8a90ab;
+  --c-now:#8a97ff; --c-want:#ff8fb1; --accent:#8a97ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  font-family:'Gowun Dodum',system-ui,sans-serif; color:var(--ink);
+  background:var(--bg1);
+  background-image:
+    radial-gradient(at 12% 8%, var(--bg2) 0, transparent 50%),
+    radial-gradient(at 88% 20%, var(--bg3) 0, transparent 45%),
+    radial-gradient(at 50% 100%, var(--bg2) 0, transparent 55%);
+  background-attachment:fixed; min-height:100vh; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.07;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+.blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.45;z-index:0;pointer-events:none}
+.blob.b1{width:260px;height:260px;background:#a9b4ff;top:-60px;left:-60px}
+.blob.b2{width:300px;height:300px;background:#ffb3c9;bottom:-80px;right:-80px}
+.wrap{position:relative;z-index:1;max-width:720px;margin:0 auto;padding:20px 16px 60px}
+.wrap.wide{max-width:1180px}
+.glass{
+  background:var(--glass); border:1px solid var(--line); border-radius:var(--radius);
+  backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+  box-shadow:var(--shadow);
+}
+header.top{padding:22px 22px 18px;margin-bottom:16px}
+.eyebrow{font-size:13px;color:var(--accent);letter-spacing:.04em}
+h1{font-size:24px;margin:4px 0 6px;font-weight:400}
+h2{font-size:19px;margin:0 0 6px;font-weight:400}
+h3{font-size:16px;margin:0 0 8px;font-weight:400}
+p{margin:0 0 10px;color:var(--sub)}
+.small{font-size:13px;color:var(--muted)}
+.card{padding:20px;margin-bottom:14px}
+.progress{height:8px;border-radius:99px;background:rgba(127,127,160,.18);overflow:hidden;margin-top:12px}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--c-now),var(--c-want));transition:width .35s}
+.step-label{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:6px}
+.q{padding:16px 0;border-top:1px dashed rgba(127,127,160,.25)}
+.q:first-of-type{border-top:none;padding-top:4px}
+.q-text{font-size:16px;margin-bottom:10px;color:var(--ink)}
+.tag{display:inline-block;font-size:12px;padding:2px 10px;border-radius:99px;background:var(--glass-strong);border:1px solid var(--line);color:var(--sub);margin-bottom:6px}
+.likert{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.likert button{
+  font-family:inherit;font-size:15px;border:1px solid var(--line);background:var(--glass-strong);
+  color:var(--ink);border-radius:14px;padding:12px 0 8px;cursor:pointer;transition:.15s;min-height:56px;
+  display:flex;flex-direction:column;align-items:center;gap:2px
+}
+.likert button small{font-size:10px;color:var(--muted)}
+.likert button.on{background:var(--accent);color:#fff;border-color:transparent;transform:translateY(-1px)}
+.likert button.on small{color:rgba(255,255,255,.85)}
+.likert.want button.on{background:var(--c-want)}
+.scale-hint{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:4px}
+.pair{display:grid;gap:10px}
+.pair .row-label{font-size:13px;margin-bottom:4px}
+.row-label.now{color:var(--c-now)} .row-label.want{color:var(--c-want)}
+textarea{
+  width:100%;min-height:84px;font-family:inherit;font-size:15px;color:var(--ink);
+  background:var(--glass-strong);border:1px solid var(--line);border-radius:14px;padding:12px;resize:vertical
+}
+.btns{display:flex;gap:10px;margin-top:14px}
+.btn{
+  flex:1;font-family:inherit;font-size:16px;border:none;border-radius:16px;padding:14px 16px;cursor:pointer;
+  background:linear-gradient(135deg,var(--c-now),#7d6cf0);color:#fff;box-shadow:0 6px 18px rgba(91,108,240,.3)
+}
+.btn.ghost{background:var(--glass-strong);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sm{flex:none;font-size:13px;padding:8px 14px;border-radius:12px}
+.notice{padding:12px 16px;border-radius:16px;font-size:14px;margin-bottom:14px;background:rgba(224,145,58,.14);border:1px solid rgba(224,145,58,.35);color:var(--ink)}
+.center{text-align:center}
+.big-emoji{font-size:48px}
+.hidden{display:none!important}
+/* 결과 */
+.grid{display:grid;gap:14px}
+@media(min-width:900px){.grid.cols-2{grid-template-columns:1fr 1fr}.grid.cols-3{grid-template-columns:320px 1fr 1fr}}
+.kpi{display:flex;align-items:baseline;gap:6px}
+.kpi b{font-size:44px;font-weight:400;color:var(--accent)}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi-box{padding:14px;border-radius:16px;background:var(--glass-strong);border:1px solid var(--line)}
+.kpi-box .v{font-size:26px}
+.kpi-box .l{font-size:12px;color:var(--muted)}
+.chart-box{position:relative;height:320px}
+.chart-box.tall{height:360px}
+.insight{padding:12px 14px;border-radius:14px;background:var(--glass-strong);border:1px solid var(--line);margin-bottom:8px;font-size:15px}
+.insight b{font-weight:400;color:var(--accent)}
+.voices{display:grid;gap:8px}
+.voice{padding:10px 14px;border-radius:14px;background:var(--glass-strong);border:1px solid var(--line);font-size:14px}
+.voice-col h3{margin-top:6px}
+.qr-box{display:flex;flex-direction:column;align-items:center;gap:10px}
+#qr{background:#fff;padding:12px;border-radius:16px}
+.url{font-size:13px;word-break:break-all;color:var(--sub);text-align:center}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.live-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c-good);margin-right:6px;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(47,163,124,.6)}70%{box-shadow:0 0 0 10px rgba(47,163,124,0)}100%{box-shadow:0 0 0 0 rgba(47,163,124,0)}}
+.legend-note{font-size:12px;color:var(--muted);margin-top:6px}
+.lock{padding:26px;text-align:center}
+.present .chart-box{height:400px}
+.present .insight{font-size:18px}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<!-- ============ 참여자 설문 ============ -->
+<main id="surveyView" class="wrap">
+  <div id="demoNotice" class="notice hidden">미리보기 모드입니다. 저장소가 연결되지 않아 응답이 이 기기에만 저장됩니다. Vercel 배포 후에는 모든 참여자의 응답이 실시간으로 모입니다.</div>
+
+  <header class="top glass">
+    <div class="eyebrow">함께 성장하는 조직문화와 효과적인 슈퍼비전</div>
+    <h1>우리 조직문화 진단</h1>
+    <p class="small" style="margin:0">완전 익명 · 약 7분 · 정답이 없습니다</p>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="step-label"><span id="stepName">시작</span><span id="stepNum">0 / 4</span></div>
+  </header>
+
+  <!-- STEP 0 안내 -->
+  <section class="step card glass" data-step="0">
+    <h2>시작하기 전에</h2>
+    <p>이 진단은 우리 기관의 '지금 모습'과 '바라는 모습'을 함께 살펴보기 위한 것입니다.</p>
+    <p>이름, 직위, 근속연수 등 개인을 알아볼 수 있는 정보는 전혀 묻지도 저장하지도 않습니다. 결과는 전체 평균으로만 공개되며, 응답이 5명 이상 모였을 때만 화면에 나타납니다.</p>
+    <p>평소 느끼는 그대로 솔직하게 응답해 주세요. 솔직한 응답이 오늘 수업을 가장 의미 있게 만듭니다.</p>
+    <div class="btns"><button class="btn" data-next>시작하기</button></div>
+  </section>
+
+  <!-- STEP 1 조직문화 유형 -->
+  <section class="step card glass hidden" data-step="1">
+    <span class="tag">1 / 4 · 조직문화 유형</span>
+    <h2>우리 기관은 어떤 모습인가요?</h2>
+    <p class="small">각 문장에 대해 <span style="color:var(--c-now)">현재 모습</span>과 <span style="color:var(--c-want)">바라는 모습</span>을 각각 골라 주세요.</p>
+    <div id="partA"></div>
+    <div class="btns"><button class="btn ghost" data-prev>이전</button><button class="btn" data-next>다음</button></div>
+  </section>
+
+  <!-- STEP 2 심리적 안전감 -->
+  <section class="step card glass hidden" data-step="2">
+    <span class="tag">2 / 4 · 심리적 안전감</span>
+    <h2>우리 팀에서 나는 얼마나 편안한가요?</h2>
+    <p class="small">1 전혀 그렇지 않다 ~ 5 매우 그렇다</p>
+    <div id="partB"></div>
+    <div class="btns"><button class="btn ghost" data-prev>이전</button><button class="btn" data-next>다음</button></div>
+  </section>
+
+  <!-- STEP 3 소통·슈퍼비전 -->
+  <section class="step card glass hidden" data-step="3">
+    <span class="tag">3 / 4 · 소통과 슈퍼비전</span>
+    <h2>일하면서 느끼는 소통과 지지</h2>
+    <p class="small">1 전혀 그렇지 않다 ~ 5 매우 그렇다</p>
+    <div id="partC"></div>
+    <div class="btns"><button class="btn ghost" data-prev>이전</button><button class="btn" data-next>다음</button></div>
+  </section>
+
+  <!-- STEP 4 개방형 -->
+  <section class="step card glass hidden" data-step="4">
+    <span class="tag">4 / 4 · 한 줄 생각</span>
+    <h2>짧게 적어 주세요 (선택)</h2>
+    <div class="q"><div class="q-text">우리 기관에서 꼭 지키고 싶은 문화 한 가지는?</div><textarea id="d1" maxlength="200" placeholder="예: 서로 아이들 이야기를 나누는 분위기"></textarea></div>
+    <div class="q"><div class="q-text">바뀌었으면 하는 점 한 가지는?</div><textarea id="d2" maxlength="200"></textarea></div>
+    <div class="q"><div class="q-text">나에게 도움이 되는 슈퍼비전은 어떤 모습인가요?</div><textarea id="d3" maxlength="200"></textarea></div>
+    <p class="small">특정인을 알아볼 수 있는 내용은 피해 주세요.</p>
+    <div class="btns"><button class="btn ghost" data-prev>이전</button><button class="btn" id="submitBtn">제출하기</button></div>
+  </section>
+
+  <!-- 완료 -->
+  <section id="doneCard" class="card glass center hidden">
+    <div class="big-emoji">🌱</div>
+    <h2>응답해 주셔서 감사합니다</h2>
+    <p id="doneMsg">잠시 후 강사 화면에서 함께 결과를 살펴봅니다.</p>
+    <div class="btns"><button class="btn" id="seeResult">전체 결과 보기</button></div>
+  </section>
+</main>
+
+<!-- ============ 결과 화면 ============ -->
+<main id="resultView" class="wrap wide hidden">
+  <div id="demoNotice2" class="notice hidden">미리보기 모드입니다. 이 기기에 저장된 응답만 표시됩니다. <button class="btn sm ghost" id="seedBtn" style="margin-left:6px">예시 데이터 14건 넣기</button></div>
+
+  <header class="top glass">
+    <div class="toolbar">
+      <div>
+        <div class="eyebrow"><span class="live-dot"></span>실시간 집계</div>
+        <h1 style="margin-bottom:0">우리 조직문화 진단 결과</h1>
+      </div>
+      <div id="adminTools" class="hidden" style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm ghost" id="toggleOpen">결과 공개</button>
+        <button class="btn sm ghost" id="presentBtn">발표 모드</button>
+        <button class="btn sm ghost" id="csvBtn">CSV 저장</button>
+        <button class="btn sm ghost" id="resetBtn">초기화</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid cols-3">
+    <section class="card glass" id="joinCard">
+      <h3>참여하기</h3>
+      <div class="qr-box"><div id="qr"></div><div class="url" id="joinUrl"></div></div>
+      <div class="kpi" style="justify-content:center;margin-top:10px"><b id="count">0</b><span>명 응답</span></div>
+      <p class="small center" id="targetMsg">목표 14명</p>
+    </section>
+    <section class="card glass" style="grid-column:span 2" id="kpiCard">
+      <h3>한눈에 보기</h3>
+      <div class="kpis" id="kpis"></div>
+      <div style="margin-top:12px" id="insights"></div>
+    </section>
+  </div>
+
+  <div id="lockCard" class="card glass lock hidden">
+    <div class="big-emoji">🔒</div>
+    <h2>응답이 모이는 중입니다</h2>
+    <p id="lockMsg">익명성 보호를 위해 5명 이상 응답하면 결과가 공개됩니다.</p>
+  </div>
+
+  <div id="charts">
+    <div class="grid cols-2">
+      <section class="card glass">
+        <h3>조직문화 유형: 현재 vs 바라는 모습</h3>
+        <div class="chart-box tall"><canvas id="radar"></canvas></div>
+        <div class="legend-note">경쟁가치모형(Cameron &amp; Quinn) 4유형 간이 측정 · 5점 척도 평균</div>
+      </section>
+      <section class="card glass">
+        <h3>유형별 격차 (바람 − 현재)</h3>
+        <div class="chart-box tall"><canvas id="gap"></canvas></div>
+        <div class="legend-note">막대가 길수록 '더 강해지길 바라는' 문화입니다. 음수는 '줄었으면' 하는 문화입니다.</div>
+      </section>
+    </div>
+    <div class="grid cols-2">
+      <section class="card glass">
+        <h3>심리적 안전감 문항별 점수</h3>
+        <div class="chart-box tall"><canvas id="ps"></canvas></div>
+        <div class="legend-note">Edmondson(1999) 7문항 의역 · (역) 문항은 점수를 뒤집어 높을수록 안전함을 뜻함</div>
+      </section>
+      <section class="card glass">
+        <h3>소통·슈퍼비전 체감도</h3>
+        <div class="chart-box tall"><canvas id="sv"></canvas></div>
+        <div class="legend-note">막대: 평균 · 숫자: 긍정응답률(4~5점 비율)</div>
+      </section>
+    </div>
+    <section class="card glass">
+      <h3>우리의 목소리</h3>
+      <div class="grid cols-3" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
+        <div class="voice-col"><h3 style="color:var(--c-good)">지키고 싶은 문화</h3><div class="voices" id="v1"></div></div>
+        <div class="voice-col"><h3 style="color:var(--c-warn)">바뀌었으면 하는 점</h3><div class="voices" id="v2"></div></div>
+        <div class="voice-col"><h3 style="color:var(--accent)">도움 되는 슈퍼비전</h3><div class="voices" id="v3"></div></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  // ================= 설정 =================
+  const MIN_N = 5;          // 익명성 보호 최소 공개 인원
+  const TARGET = 14;        // 목표 인원
+  const POLL_MS = 3000;     // 실시간 갱신 주기
+  const params = new URLSearchParams(location.search);
+  const SESSION = (params.get('s') || 'baeaewon').slice(0, 40);
+  const VIEW = params.get('view'); // null | result | admin
+  const IS_ADMIN = VIEW === 'admin';
+
+  // ================= 문항 =================
+  const TYPES = [
+    { id: 'a1', name: '관계형', text: '우리 기관은 가족처럼 서로 돌보고 지지한다.' },
+    { id: 'a2', name: '혁신형', text: '우리 기관은 새로운 시도와 아이디어를 환영한다.' },
+    { id: 'a3', name: '성과형', text: '우리 기관은 목표 달성과 결과를 중시한다.' },
+    { id: 'a4', name: '위계형', text: '우리 기관은 규정·절차·보고체계가 분명하다.' }
+  ];
+  const PS = [
+    { id: 'b1', r: true,  text: '이곳에서 실수를 하면 나에게 불리하게 작용하는 경우가 많다.', short: '실수가 불리하지 않음(역)' },
+    { id: 'b2', r: false, text: '나는 문제나 어려운 이슈를 꺼내 이야기할 수 있다.', short: '어려운 이슈 제기' },
+    { id: 'b3', r: true,  text: '동료들은 나와 다른 의견을 가진 사람을 배척하기도 한다.', short: '다른 의견 수용(역)' },
+    { id: 'b4', r: false, text: '이곳에서는 새로운 방법을 시도해도 괜찮다.', short: '시도해도 괜찮음' },
+    { id: 'b5', r: true,  text: '동료에게 도움을 요청하기 어렵다.', short: '도움 요청 쉬움(역)' },
+    { id: 'b6', r: false, text: '누구도 내 노력을 일부러 깎아내리지 않는다.', short: '노력 존중' },
+    { id: 'b7', r: false, text: '동료들은 나의 고유한 역량을 존중하고 활용한다.', short: '역량 존중·활용' }
+  ];
+  const SV = [
+    { id: 'c1', text: '업무상 어려움이 있을 때 상급자와 편하게 상의할 수 있다.', short: '상급자와 상의' },
+    { id: 'c2', text: '슈퍼비전(업무 지도)이 정기적으로 이루어진다.', short: '정기적 슈퍼비전' },
+    { id: 'c3', text: '슈퍼비전이 평가보다 나의 성장을 돕는 방향으로 진행된다.', short: '성장 지향 슈퍼비전' },
+    { id: 'c4', text: '아동 사례로 정서적으로 힘들 때 지지를 받는다.', short: '정서적 지지' },
+    { id: 'c5', text: '교대·인수인계 과정에서 정보가 원활히 공유된다.', short: '인수인계 정보공유' },
+    { id: 'c6', text: '갈등이 생기면 회피하지 않고 대화로 해결하는 편이다.', short: '대화로 갈등 해결' }
+  ];
+  const LABELS = ['전혀 아님', '아님', '보통', '그런 편', '매우 그럼'];
+
+  // ================= 저장소 (API → 실패 시 로컬 미리보기) =================
+  let demo = false;
+  const LS_KEY = 'oc_demo_' + SESSION;
+  const ls = {
+    get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+  async function api(path, opts) {
+    const r = await fetch(path, opts);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.ok) { const e = new Error(data.message || '요청 실패'); e.status = r.status; throw e; }
+    return data;
+  }
+  async function submitAnswers(answers) {
+    if (!demo) {
+      try {
+        return await api('/api/submit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: SESSION, answers }) });
+      } catch (e) {
+        if (e.status === 400) throw e;
+        enableDemo();
+      }
+    }
+    const list = ls.get(LS_KEY, []); list.push(answers); ls.set(LS_KEY, list);
+    return { ok: true, count: list.length };
+  }
+  async function fetchResponses() {
+    if (!demo) {
+      try { return (await api('/api/results?session=' + encodeURIComponent(SESSION))).responses; }
+      catch (e) { enableDemo(); }
+    }
+    return ls.get(LS_KEY, []);
+  }
+  function enableDemo() {
+    demo = true;
+    document.getElementById('demoNotice').classList.remove('hidden');
+    document.getElementById('demoNotice2').classList.remove('hidden');
+  }
+
+  // ================= 설문 렌더링 =================
+  const answers = {};
+  function likert(key, cls) {
+    const wrap = document.createElement('div');
+    wrap.className = 'likert' + (cls ? ' ' + cls : '');
+    for (let v = 1; v <= 5; v++) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `${v}<small>${LABELS[v - 1]}</small>`;
+      b.setAttribute('aria-label', `${v}점 ${LABELS[v - 1]}`);
+      b.onclick = () => {
+        answers[key] = v;
+        wrap.querySelectorAll('button').forEach((x) => x.classList.remove('on'));
+        b.classList.add('on');
+      };
+      wrap.appendChild(b);
+    }
+    return wrap;
+  }
+  function renderSurvey() {
+    const A = document.getElementById('partA');
+    TYPES.forEach((t) => {
+      const q = document.createElement('div'); q.className = 'q';
+      q.innerHTML = `<span class="tag">${t.name}</span><div class="q-text">${t.text}</div>`;
+      const pair = document.createElement('div'); pair.className = 'pair';
+      const r1 = document.createElement('div'); r1.innerHTML = '<div class="row-label now">현재 모습</div>'; r1.appendChild(likert(t.id + 'n'));
+      const r2 = document.createElement('div'); r2.innerHTML = '<div class="row-label want">바라는 모습</div>'; r2.appendChild(likert(t.id + 'w', 'want'));
+      pair.append(r1, r2); q.appendChild(pair); A.appendChild(q);
+    });
+    [['partB', PS], ['partC', SV]].forEach(([el, items]) => {
+      const box = document.getElementById(el);
+      items.forEach((it, i) => {
+        const q = document.createElement('div'); q.className = 'q';
+        q.innerHTML = `<div class="q-text">${i + 1}. ${it.text}</div>`;
+        q.appendChild(likert(it.id)); box.appendChild(q);
+      });
+    });
+  }
+  const STEP_NAMES = ['시작', '조직문화 유형', '심리적 안전감', '소통과 슈퍼비전', '한 줄 생각'];
+  const STEP_KEYS = {
+    1: TYPES.flatMap((t) => [t.id + 'n', t.id + 'w']),
+    2: PS.map((x) => x.id),
+    3: SV.map((x) => x.id)
+  };
+  let step = 0;
+  function showStep(n) {
+    step = n;
+    document.querySelectorAll('.step').forEach((s) => s.classList.toggle('hidden', +s.dataset.step !== n));
+    document.getElementById('bar').style.width = (n / 4 * 100) + '%';
+    document.getElementById('stepName').textContent = STEP_NAMES[n];
+    document.getElementById('stepNum').textContent = `${n} / 4`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function missing(n) { return (STEP_KEYS[n] || []).filter((k) => !answers[k]); }
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-next]')) {
+      const miss = missing(step);
+      if (miss.length) { alert(`아직 응답하지 않은 문항이 ${miss.length}개 있습니다.`); return; }
+      showStep(step + 1);
+    }
+    if (e.target.matches('[data-prev]')) showStep(step - 1);
+  });
+  document.getElementById('submitBtn').onclick = async (e) => {
+    const btn = e.currentTarget; btn.disabled = true; btn.textContent = '제출 중…';
+    answers.d1 = document.getElementById('d1').value;
+    answers.d2 = document.getElementById('d2').value;
+    answers.d3 = document.getElementById('d3').value;
+    try {
+      const r = await submitAnswers(answers);
+      ls.set('oc_done_' + SESSION, true);
+      showDone(r.count);
+    } catch (err) {
+      alert(err.message || '제출에 실패했습니다. 다시 시도해 주세요.');
+      btn.disabled = false; btn.textContent = '제출하기';
+    }
+  };
+  function showDone(count) {
+    document.querySelectorAll('.step').forEach((s) => s.classList.add('hidden'));
+    document.getElementById('bar').style.width = '100%';
+    document.getElementById('stepName').textContent = '완료';
+    document.getElementById('stepNum').textContent = '4 / 4';
+    document.getElementById('doneCard').classList.remove('hidden');
+    if (count) document.getElementById('doneMsg').textContent = `지금까지 ${count}명이 응답했습니다. 잠시 후 함께 결과를 살펴봅니다.`;
+  }
+  document.getElementById('seeResult').onclick = () => {
+    const u = new URL(location.href); u.searchParams.set('view', 'result'); location.href = u.toString();
+  };
+
+  // ================= 집계 =================
+  const mean = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+  const fx = (v) => v.toFixed(2);
+  function score(r, id) { const it = PS.find((p) => p.id === id); const v = r[id]; return it && it.r ? 6 - v : v; }
+  function aggregate(rs) {
+    const now = TYPES.map((t) => mean(rs.map((r) => r[t.id + 'n'])));
+    const want = TYPES.map((t) => mean(rs.map((r) => r[t.id + 'w'])));
+    const gap = want.map((w, i) => w - now[i]);
+    const ps = PS.map((p) => mean(rs.map((r) => score(r, p.id))));
+    const psPos = PS.map((p) => rs.filter((r) => score(r, p.id) >= 4).length / (rs.length || 1));
+    const sv = SV.map((c) => mean(rs.map((r) => r[c.id])));
+    const svPos = SV.map((c) => rs.filter((r) => r[c.id] >= 4).length / (rs.length || 1));
+    const psTotal = mean(ps), svTotal = mean(sv);
+    return { n: rs.length, now, want, gap, ps, psPos, sv, svPos, psTotal, svTotal };
+  }
+  function insightsOf(a) {
+    const out = [];
+    const iMaxGap = a.gap.indexOf(Math.max(...a.gap));
+    const iMinGap = a.gap.indexOf(Math.min(...a.gap));
+    const iNowTop = a.now.indexOf(Math.max(...a.now));
+    out.push(`현재 가장 강한 문화는 <b>${TYPES[iNowTop].name}</b>(${fx(a.now[iNowTop])}점)입니다.`);
+    out.push(`가장 더 키우고 싶은 문화는 <b>${TYPES[iMaxGap].name}</b>입니다. 바람과 현재의 차이가 ${a.gap[iMaxGap] >= 0 ? '+' : ''}${fx(a.gap[iMaxGap])}점입니다.`);
+    if (a.gap[iMinGap] < -0.2) out.push(`<b>${TYPES[iMinGap].name}</b>은 지금보다 조금 줄었으면 하는 문화로 나타났습니다(${fx(a.gap[iMinGap])}점).`);
+    const iPsLow = a.ps.indexOf(Math.min(...a.ps));
+    out.push(`심리적 안전감에서 가장 낮은 항목은 <b>${PS[iPsLow].short.replace('(역)', '')}</b>(${fx(a.ps[iPsLow])}점)입니다.`);
+    const d = a.sv[1] - a.sv[2];
+    if (Math.abs(d) >= 0.3) out.push(d > 0
+      ? `슈퍼비전은 <b>정기성(${fx(a.sv[1])})</b>보다 <b>성장 지향성(${fx(a.sv[2])})</b>이 낮습니다. 횟수보다 방식을 함께 살펴볼 지점입니다.`
+      : `슈퍼비전은 <b>성장 지향성(${fx(a.sv[2])})</b>에 비해 <b>정기성(${fx(a.sv[1])})</b>이 낮습니다. 만남의 구조를 함께 살펴볼 지점입니다.`);
+    const iSvLow = a.sv.indexOf(Math.min(...a.sv));
+    out.push(`소통·슈퍼비전에서 가장 보완이 필요한 영역은 <b>${SV[iSvLow].short}</b>(${fx(a.sv[iSvLow])}점)입니다.`);
+    return out;
+  }
+
+  // ================= 결과 렌더링 =================
+  const charts = {};
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  function baseOpts() {
+    Chart.defaults.font.family = "'Gowun Dodum', sans-serif";
+    Chart.defaults.color = css('--sub');
+    return { responsive: true, maintainAspectRatio: false, animation: { duration: 500 } };
+  }
+  function upsert(id, cfg) {
+    if (charts[id]) { charts[id].data = cfg.data; charts[id].update(); return; }
+    charts[id] = new Chart(document.getElementById(id), cfg);
+  }
+  function hexA(hex, a) {
+    const h = hex.replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16);
+    return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
+  }
+  function draw(a) {
+    const cNow = css('--c-now'), cWant = css('--c-want'), grid = 'rgba(127,127,160,.22)';
+    upsert('radar', {
+      type: 'radar',
+      data: { labels: TYPES.map((t) => t.name), datasets: [
+        { label: '현재', data: a.now, borderColor: cNow, backgroundColor: hexA(cNow, .18), pointBackgroundColor: cNow, borderWidth: 2 },
+        { label: '바라는 모습', data: a.want, borderColor: cWant, backgroundColor: hexA(cWant, .15), pointBackgroundColor: cWant, borderWidth: 2, borderDash: [6, 4] }
+      ] },
+      options: { ...baseOpts(), scales: { r: { min: 1, max: 5, ticks: { stepSize: 1, backdropColor: 'transparent' }, grid: { color: grid }, angleLines: { color: grid }, pointLabels: { font: { size: 15 } } } }, plugins: { legend: { position: 'bottom' } } }
+    });
+    upsert('gap', {
+      type: 'bar',
+      data: { labels: TYPES.map((t) => t.name), datasets: [{ label: '격차', data: a.gap, backgroundColor: a.gap.map((g) => g >= 0 ? hexA(cWant, .75) : hexA(cNow, .6)), borderRadius: 10 }] },
+      options: { ...baseOpts(), indexAxis: 'y', scales: { x: { suggestedMin: -1.5, suggestedMax: 1.5, grid: { color: grid } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+    });
+    const bandColor = (v) => v >= 4 ? css('--c-good') : v >= 3 ? css('--c-warn') : css('--c-bad');
+    upsert('ps', {
+      type: 'bar',
+      data: { labels: PS.map((p) => p.short), datasets: [{ label: '평균', data: a.ps, backgroundColor: a.ps.map((v) => hexA(bandColor(v), .75)), borderRadius: 10 }] },
+      options: { ...baseOpts(), indexAxis: 'y', scales: { x: { min: 1, max: 5, grid: { color: grid } }, y: { grid: { display: false } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { afterLabel: (c) => `긍정응답률 ${Math.round(a.psPos[c.dataIndex] * 100)}%` } } } }
+    });
+    upsert('sv', {
+      type: 'bar',
+      data: { labels: SV.map((c) => `${c.short}  ${Math.round(a.svPos[SV.indexOf(c)] * 100)}%`), datasets: [{ label: '평균', data: a.sv, backgroundColor: a.sv.map((v) => hexA(bandColor(v), .75)), borderRadius: 10 }] },
+      options: { ...baseOpts(), indexAxis: 'y', scales: { x: { min: 1, max: 5, grid: { color: grid } }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } }
+    });
+  }
+  function esc(s) { return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  let voiceSig = '';
+  function renderVoices(rs) {
+    const sig = rs.length + ':' + rs.map((r) => (r.d1 || '') + (r.d2 || '') + (r.d3 || '')).join('|').length;
+    if (sig === voiceSig) return; // 순서가 매번 섞이지 않도록 변경 시에만 갱신
+    voiceSig = sig;
+    ['d1', 'd2', 'd3'].forEach((k, i) => {
+      const items = shuffle(rs.map((r) => (r[k] || '').trim()).filter(Boolean));
+      document.getElementById('v' + (i + 1)).innerHTML = items.length
+        ? items.map((t) => `<div class="voice">${esc(t)}</div>`).join('')
+        : '<p class="small">아직 응답이 없습니다.</p>';
+    });
+  }
+  let forceOpen = false, lastRs = [];
+  async function refresh() {
+    const rs = await fetchResponses();
+    lastRs = rs;
+    document.getElementById('count').textContent = rs.length;
+    const left = Math.max(0, TARGET - rs.length);
+    document.getElementById('targetMsg').textContent = left ? `목표 ${TARGET}명 · ${left}명 남음` : `목표 ${TARGET}명 달성 🎉`;
+    const open = rs.length >= MIN_N || (IS_ADMIN && forceOpen && rs.length > 0);
+    document.getElementById('lockCard').classList.toggle('hidden', open);
+    document.getElementById('charts').classList.toggle('hidden', !open);
+    document.getElementById('kpiCard').classList.toggle('hidden', !open);
+    if (!open) {
+      document.getElementById('lockMsg').textContent = `현재 ${rs.length}명 응답. 익명성 보호를 위해 ${MIN_N}명 이상 응답하면 결과가 공개됩니다.`;
+      return;
+    }
+    const a = aggregate(rs);
+    document.getElementById('kpis').innerHTML = `
+      <div class="kpi-box"><div class="v">${fx(a.psTotal)}</div><div class="l">심리적 안전감 평균 (5점)</div></div>
+      <div class="kpi-box"><div class="v">${fx(a.svTotal)}</div><div class="l">소통·슈퍼비전 평균 (5점)</div></div>
+      <div class="kpi-box"><div class="v">${TYPES[a.now.indexOf(Math.max(...a.now))].name}</div><div class="l">현재 가장 강한 문화</div></div>
+      <div class="kpi-box"><div class="v">${TYPES[a.gap.indexOf(Math.max(...a.gap))].name}</div><div class="l">가장 키우고 싶은 문화</div></div>`;
+    document.getElementById('insights').innerHTML = insightsOf(a).map((t) => `<div class="insight">${t}</div>`).join('');
+    draw(a);
+    renderVoices(rs);
+  }
+
+  function renderResultView() {
+    document.getElementById('surveyView').classList.add('hidden');
+    document.getElementById('resultView').classList.remove('hidden');
+    const join = new URL(location.origin + location.pathname);
+    if (SESSION !== 'baeaewon') join.searchParams.set('s', SESSION);
+    document.getElementById('joinUrl').textContent = join.toString();
+    if (!IS_ADMIN) {
+      document.getElementById('joinCard').classList.add('hidden');
+    } else {
+      document.getElementById('adminTools').classList.remove('hidden');
+      try { new QRCode(document.getElementById('qr'), { text: join.toString(), width: 200, height: 200, colorDark: '#24283b', colorLight: '#ffffff' }); } catch (e) {}
+    }
+    document.getElementById('toggleOpen').onclick = (e) => {
+      forceOpen = !forceOpen; e.currentTarget.textContent = forceOpen ? '공개 기준 적용' : '결과 공개';
+      refresh();
+    };
+    document.getElementById('presentBtn').onclick = () => document.body.classList.toggle('present');
+    document.getElementById('resetBtn').onclick = async () => {
+      if (demo) { if (confirm('이 기기의 미리보기 응답을 모두 지울까요?')) { ls.set(LS_KEY, []); voiceSig = ''; refresh(); } return; }
+      const pin = prompt('관리자 PIN을 입력하세요. 모든 응답이 삭제됩니다.');
+      if (!pin) return;
+      try { await api('/api/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session: SESSION, pin }) }); voiceSig = ''; refresh(); }
+      catch (err) { alert(err.message); }
+    };
+    document.getElementById('csvBtn').onclick = () => {
+      const keys = [...TYPES.flatMap((t) => [t.id + 'n', t.id + 'w']), ...PS.map((p) => p.id), ...SV.map((c) => c.id), 'd1', 'd2', 'd3'];
+      const head = [...TYPES.flatMap((t) => [t.name + '_현재', t.name + '_바람']), ...PS.map((p) => 'PS_' + p.short), ...SV.map((c) => 'SV_' + c.short), '지키고싶은문화', '바뀌었으면', '도움되는슈퍼비전'];
+      const rows = lastRs.map((r) => keys.map((k) => `"${String(r[k] ?? '').replace(/"/g, '""')}"`).join(','));
+      const blob = new Blob(['﻿' + head.join(',') + '\n' + rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `조직문화진단_${SESSION}.csv`; a.click();
+    };
+    document.getElementById('seedBtn').onclick = () => {
+      const rnd = (base) => Math.max(1, Math.min(5, Math.round(base + (Math.random() * 2 - 1) * 1.1)));
+      const samples = [];
+      const d1 = ['아이들 이야기를 서로 나누는 분위기', '힘들 때 서로 대신 근무해 주는 마음', '선배들의 따뜻한 조언', '', '명절 행사를 함께 준비하는 문화'];
+      const d2 = ['회의 때 의견을 말하기 어려움', '인수인계가 구두로만 이뤄짐', '보고 절차가 너무 많음', '', '신입 교육이 체계적이었으면'];
+      const d3 = ['정기적으로 사례를 함께 보는 시간', '평가가 아니라 들어주는 슈퍼비전', '구체적인 피드백', '', '정서적으로 소진될 때 쉬어갈 수 있게'];
+      for (let i = 0; i < 14; i++) samples.push({
+        a1n: rnd(3.4), a1w: rnd(4.5), a2n: rnd(2.4), a2w: rnd(3.8), a3n: rnd(3.0), a3w: rnd(3.1), a4n: rnd(4.2), a4w: rnd(3.4),
+        b1: rnd(3.0), b2: rnd(3.1), b3: rnd(2.6), b4: rnd(2.9), b5: rnd(2.8), b6: rnd(3.7), b7: rnd(3.4),
+        c1: rnd(3.5), c2: rnd(3.3), c3: rnd(2.6), c4: rnd(2.7), c5: rnd(2.9), c6: rnd(2.8),
+        d1: d1[i % 5], d2: d2[i % 5], d3: d3[i % 5]
+      });
+      ls.set(LS_KEY, samples); voiceSig = ''; refresh();
+    };
+    refresh();
+    setInterval(refresh, POLL_MS);
+  }
+
+  // ================= 시작 =================
+  if (VIEW === 'result' || VIEW === 'admin') {
+    renderResultView();
+  } else {
+    renderSurvey();
+    showStep(0);
+    if (ls.get('oc_done_' + SESSION, false) && !params.has('again')) showDone();
+  }
+})();
+</script>
+</body>
+</html>
